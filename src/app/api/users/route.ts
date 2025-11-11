@@ -41,11 +41,11 @@ export async function POST(request: Request) {
     }
     
     const body = await request.json();
-    const { name, email, age } = body;
+    const { name, lastName, email, birthDate } = body;
 
-    if (!name || !email) {
+    if (!name || !lastName || !email || !birthDate) {
       return NextResponse.json(
-        { error: 'Name and email are required' },
+        { error: 'Name, lastName, email and birthDate are required' },
         { status: 400 }
       );
     }
@@ -53,8 +53,9 @@ export async function POST(request: Request) {
     const usersRef = db.collection('users');
     const docRef = await usersRef.add({
       name,
+      lastName,
       email,
-      age: age || null,
+      birthDate,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

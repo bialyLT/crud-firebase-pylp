@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react';
 import { userService } from '@/services/userService';
 import { User } from '@/types/user';
+import { calculateAge, formatDate } from '@/lib/utils';
 
 export default function Home() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
+    lastName: '',
     email: '',
-    age: '',
+    birthDate: '',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -43,20 +45,22 @@ export default function Home() {
       if (editingId) {
         await userService.updateUser(editingId, {
           name: formData.name,
+          lastName: formData.lastName,
           email: formData.email,
-          age: formData.age ? parseInt(formData.age) : undefined,
+          birthDate: formData.birthDate,
         });
         showMessage('success', 'Usuario actualizado correctamente');
       } else {
         await userService.createUser({
           name: formData.name,
+          lastName: formData.lastName,
           email: formData.email,
-          age: formData.age ? parseInt(formData.age) : undefined,
+          birthDate: formData.birthDate,
         });
         showMessage('success', 'Usuario creado correctamente');
       }
       
-      setFormData({ name: '', email: '', age: '' });
+      setFormData({ name: '', lastName: '', email: '', birthDate: '' });
       setEditingId(null);
       loadUsers();
     } catch (error) {
@@ -67,8 +71,9 @@ export default function Home() {
   const handleEdit = (user: User) => {
     setFormData({
       name: user.name,
+      lastName: user.lastName,
       email: user.email,
-      age: user.age?.toString() || '',
+      birthDate: user.birthDate,
     });
     setEditingId(user.id || null);
   };
@@ -86,7 +91,7 @@ export default function Home() {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', email: '', age: '' });
+    setFormData({ name: '', lastName: '', email: '', birthDate: '' });
     setEditingId(null);
   };
 
@@ -115,6 +120,17 @@ export default function Home() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="lastName">Apellido:</label>
+            <input
+              type="text"
+              id="lastName"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input
               type="email"
@@ -126,12 +142,13 @@ export default function Home() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="age">Edad:</label>
+            <label htmlFor="birthDate">Fecha de Nacimiento:</label>
             <input
-              type="number"
-              id="age"
-              value={formData.age}
-              onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+              type="date"
+              id="birthDate"
+              value={formData.birthDate}
+              onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+              required
             />
           </div>
 
@@ -159,9 +176,10 @@ export default function Home() {
           users.map((user) => (
             <div key={user.id} className="user-card">
               <div className="user-info">
-                <h3>{user.name}</h3>
+                <h3>{user.name} {user.lastName}</h3>
                 <p>📧 {user.email}</p>
-                {user.age && <p>🎂 {user.age} años</p>}
+                <p>🎂 {calculateAge(user.birthDate)} años</p>
+                <p>📅 Nacido el {formatDate(user.birthDate)}</p>
               </div>
               <div className="user-actions">
                 <button onClick={() => handleEdit(user)} className="btn-edit">

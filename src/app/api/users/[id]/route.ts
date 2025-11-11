@@ -52,7 +52,7 @@ export async function PUT(
     }
     
     const body = await request.json();
-    const { name, email, age } = body;
+    const { name, lastName, email, birthDate } = body;
 
     const docRef = db.collection('users').doc(params.id);
     const doc = await docRef.get();
@@ -66,8 +66,9 @@ export async function PUT(
 
     await docRef.update({
       ...(name && { name }),
+      ...(lastName && { lastName }),
       ...(email && { email }),
-      age: age || null,
+      ...(birthDate && { birthDate }),
       updatedAt: new Date(),
     });
 
